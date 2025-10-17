@@ -1,0 +1,23 @@
+{
+  "name": "appium-fresh",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@wdio/appium-service": "^9.20.0",
+    "appium": "^3.1.0",
+    "wd": "^1.14.0",
+    "webdriverio": "^9.20.0"
+  },
+  "devDependencies": {
+    "appium-uiautomator2-driver": "^5.0.5",
+    "appium-xcuitest-driver": "^10.2.2",
+    "typescript": "^5.9.3"
+  }
+}
