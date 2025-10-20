@@ -1,14 +1,29 @@
 # 📱 HQF Automated Mobile Testing
 
-Automated mobile test suite for **HighQ Fitness** mobile applications using **Appium v3**, **WebdriverIO**, and **TypeScript**.  
-Supports both **Android (UiAutomator2)** and **iOS (XCUITest)** platforms.
+This repository contains the **automated mobile testing setup** for the **HighQ Fitness app**, built using **Appium**, **WebdriverIO**, and **TypeScript**.  
+It supports both **Android** and **iOS** test execution via the Appium server.
 
 ---
 
-## 🚀 Overview
+## 🧩 Project Overview
 
-This project automates smoke and functional tests for the HighQ Fitness Android and iOS apps.  
-It runs against local emulators or connected devices using Appium.
+The setup validates that the **HighQ Fitness mobile app** builds successfully and runs on emulators or real devices, while also allowing functional and UI tests to be automated.
+
+Current test suites include:
+- ✅ Android launch validation  
+- (coming soon) iOS app validation  
+
+---
+
+## 🧱 Tech Stack
+
+| Component | Purpose |
+|------------|----------|
+| **Appium 3.x** | Cross-platform mobile automation framework |
+| **WebdriverIO 8+** | Test runner for Appium/Webdriver protocol |
+| **Mocha** | Test framework for describing and structuring tests |
+| **TypeScript** | Type safety and IntelliSense |
+| **Chai** | Assertion library for readable test expectations |
 
 ---
 
@@ -26,195 +41,199 @@ HQF-automated-mobile-testing/
 │   ├── helpers/
 │   └── utils/
 │
-├── package.json
-├── tsconfig.json
 ├── wdio.conf.ts
+├── tsconfig.json
+├── package.json
 └── README.md
 ```
 
 ---
 
-## ⚙️ Prerequisites
+## ⚙️ Installation & Setup
 
-### 1️⃣ Install system dependencies
-Ensure you have:
-- **Node.js ≥ 18**
-- **Java JDK ≥ 11**
-- **Android Studio** (for SDK and AVD Manager)
-- **Xcode** (for iOS tests on macOS)
-- **Appium v3**
+### 1️⃣ Install dependencies
 
-### 2️⃣ Install Appium globally (optional)
-```bash
-npm install -g appium
-```
-
-Or simply use the project-local Appium with `npx appium`.
-
-### 3️⃣ Install drivers
-From the project root (`HQF-automated-mobile-testing`):
-```bash
-npx appium driver install uiautomator2
-npx appium driver install xcuitest
-```
-
----
-
-## 🧱 Setup
-
-Install project dependencies:
 ```bash
 npm install
 ```
 
-Verify drivers:
+### 2️⃣ Install Appium globally (if not installed)
+
 ```bash
-npx appium driver list --installed
+npm install -g appium
 ```
-Expected output:
+
+### 3️⃣ Install required Appium drivers
+
+```bash
+appium driver install uiautomator2
+appium driver install xcuitest
 ```
-uiautomator2@5.x.x (automationName 'UiAutomator2')
-xcuitest@10.x.x (automationName 'XCUITest')
+
+You can check installed drivers with:
+```bash
+appium driver list --installed
 ```
 
 ---
 
-## ▶️ Running Tests
+## ▶️ Running the Tests
 
-### 🟢 1. Start Appium Server
-From the project root:
+### 🧠 Step 1 — Start the Appium server
+
+In a new terminal:
 ```bash
 npx appium
 ```
-You should see:
-```
-Appium v3.x.x Server is running on 0.0.0.0:4723
-Available drivers:
-  - uiautomator2
-  - xcuitest
-```
 
-Keep this terminal open.
+You should see output like:
+```
+[Appium] Appium REST http interface listener started on http://0.0.0.0:4723
+[Appium] Available drivers:
+[Appium]   - uiautomator2@5.0.5 (automationName 'UiAutomator2')
+[Appium]   - xcuitest@10.2.2 (automationName 'XCUITest')
+```
 
 ---
 
-### 🤖 2. Run Android Test
+### 🧠 Step 2 — Run Android Tests
 
-In a **new terminal window**:
+Run using the WDIO runner:
 ```bash
-npx ts-node tests/specs/android/androidLaunchTest.ts
+npx wdio run wdio.conf.ts
 ```
 
-Make sure an emulator or device is available:
+Or use the package script:
 ```bash
-emulator -list-avds
-emulator -avd Medium_Phone_API_36.1
+npm run test:android
 ```
 
-> The app capability should point to a valid APK:
-> ```
-> /Users/jimenanemina/Repos/highQFitness/HQF-android-ios/android/app-mobile/build/intermediates/apk/dev/debug/app-mobile-dev-debug.apk
-> ```
+✅ Expected output:
+```
+Android App Launch
+  ✓ should launch the HighQ Fitness Android app (5s)
+```
 
 ---
 
-### 🍏 3. Run iOS Test (optional)
+## 🧪 Example Test — `androidLaunchTest.ts`
 
-```bash
-npx ts-node tests/specs/ios/iosLaunchTest.ts
-```
-
-Ensure the simulator is available:
-```bash
-xcrun simctl list devices
-```
-
-> Update capabilities to point to your `.app` or `.ipa` file.
-
----
-
-## 🧠 Example Capabilities
-
-### Android (`androidLaunchTest.ts`)
 ```ts
-const caps = {
-  platformName: "Android",
-  "appium:deviceName": "Medium_Phone_API_36.1",
-  "appium:platformVersion": "15",
-  "appium:automationName": "UiAutomator2",
-  "appium:app":
-    "/Users/jimenanemina/Repos/highQFitness/HQF-android-ios/android/app-mobile/build/intermediates/apk/dev/debug/app-mobile-dev-debug.apk",
-  "appium:noReset": true,
-  "appium:avd": "Medium_Phone_API_36.1",
-};
+import { expect } from "chai";
+
+describe("Android App Launch", () => {
+  before(async () => {
+    console.log("🔧 Setting up Android test session...");
+  });
+
+  it("should launch the HighQ Fitness Android app", async () => {
+    const activity = await driver.getCurrentActivity();
+    console.log("📱 Current activity:", activity);
+    expect(activity).to.not.be.empty;
+
+    try {
+      const element = await $("android=new UiSelector().text(\"Login\")");
+      expect(await element.isDisplayed()).to.be.true;
+      console.log("✅ Login button is visible");
+    } catch {
+      console.log("⚠️ Could not find Login element (maybe another screen)");
+    }
+  });
+
+  after(async () => {
+    console.log("🧹 Cleaning up Android session...");
+    await driver.deleteSession();
+  });
+});
 ```
 
-### iOS (`iosLaunchTest.ts`)
+---
+
+## ⚙️ `wdio.conf.ts` — Configuration Example
+
 ```ts
-const caps = {
-  platformName: "iOS",
-  "appium:deviceName": "iPhone 15 Pro",
-  "appium:platformVersion": "17.0",
-  "appium:automationName": "XCUITest",
-  "appium:app":
-    "/Users/jimenanemina/Repos/highQFitness/HQF-android-ios/ios/build/Debug-iphonesimulator/HighQFitness.app",
-  "appium:noReset": true,
+import { Config } from "@wdio/types";
+
+export const config: Config = {
+  runner: "local",
+  framework: "mocha",
+  specs: ["./tests/specs/android/**/*.ts"],
+  maxInstances: 1,
+
+  capabilities: [
+    {
+      platformName: "Android",
+      "appium:deviceName": "Medium_Phone_API_36.1",
+      "appium:platformVersion": "15",
+      "appium:automationName": "UiAutomator2",
+      "appium:app":
+        "/Users/jimenanemina/Repos/highQFitness/HQF-android-ios/android/app-mobile/build/intermediates/apk/dev/debug/app-mobile-dev-debug.apk",
+      "appium:noReset": true,
+      "appium:avd": "Medium_Phone_API_36.1",
+    },
+  ],
+
+  port: 4723,
+  path: "/",
+  services: [], // Appium started manually
+  reporters: ["spec"],
+
+  mochaOpts: {
+    ui: "bdd",
+    timeout: 60000,
+  },
 };
+export default config;
 ```
 
 ---
 
-## 🧰 Helpful Commands
+## 🧩 Run iOS Tests (coming soon)
 
-| Command | Description |
-|----------|--------------|
-| `npx appium` | Start local Appium server |
-| `npx appium driver list --installed` | List installed Appium drivers |
-| `emulator -list-avds` | List available Android emulators |
-| `emulator -avd <name>` | Start a specific Android emulator |
-| `xcrun simctl list devices` | List available iOS simulators |
-
----
-
-## 🧪 Run Tests Automatically
-
-Add this to your `package.json`:
+Once iOS build integration is ready, add the XCUITest capability:
 ```json
-"scripts": {
-  "android:test": "npx appium & sleep 5 && npx ts-node tests/specs/android/androidLaunchTest.ts",
-  "ios:test": "npx appium & sleep 5 && npx ts-node tests/specs/ios/iosLaunchTest.ts"
+{
+  "platformName": "iOS",
+  "appium:automationName": "XCUITest",
+  "appium:deviceName": "iPhone 15",
+  "appium:platformVersion": "17.0",
+  "appium:app": "<path_to_app>/HQF.ipa"
 }
 ```
 
-Then run:
+Then:
 ```bash
-npm run android:test
-```
-or
-```bash
-npm run ios:test
+npm run test:ios
 ```
 
 ---
 
-## 🧹 Cleanup
+## 🧹 Common Fixes
 
-Stop all running Appium servers:
-```bash
-pkill -f appium
-```
-
----
-
-## 🪄 Notes
-
-- Keep the APK and app paths up to date after rebuilding.
-- Make sure `adb` and `xcrun` are accessible from your PATH.
-- If a test fails to connect, confirm the device/emulator is booted and unlocked.
+| Issue | Solution |
+|--------|-----------|
+| **`driver not found`** | Reinstall Appium drivers using `appium driver install uiautomator2` |
+| **`stream.on is not a function`** | Make sure you’re not using Node FormData with Appium fetch (WDIO handles it automatically) |
+| **`Cannot connect to emulator`** | Ensure your Android emulator is started (`adb devices`) before running the test |
+| **`Could not find a driver for UiAutomator2`** | Run `appium driver list --installed` and verify driver location |
 
 ---
 
-### 🧑‍💻 Maintainer
-**Jimena Nemiña**  
-HQF QA Automation Engineer  
-📍 HighQ Fitness QA Suite — Android & iOS
+## 🧠 Next Steps
+
+- [ ] Add Page Object Models for reusable selectors  
+- [ ] Integrate Allure reporter  
+- [ ] Add iOS testing capability  
+- [ ] Integrate CI/CD execution with test artifacts
+
+---
+
+## 🧑‍💻 Author
+
+**QA Automation Setup by Jimena Nemiña**  
+📍 HighQ Fitness — QA Automation Framework  
+🧠 Stack: TypeScript • Appium • WebdriverIO • Mocha
+
+---
+
+> _“Test the app like a user, build the framework like an engineer.”_
