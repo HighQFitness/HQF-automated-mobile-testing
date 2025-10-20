@@ -1,25 +1,27 @@
-import { remote } from "webdriverio";
+import { expect } from "chai";
 
-async function main() {
-  const opts = {
-    protocol: "http",
-    hostname: "127.0.0.1",
-    port: 4723,
-    path: "/",
-    capabilities: {
-      platformName: "Android",
-      "appium:deviceName": "Medium_Phone_API_36.1", 
-      "appium:platformVersion": "15",               
-      "appium:automationName": "UiAutomator2",
-      "appium:app": "/Users/jimenanemina/Repos/highQFitness/HQF-android-ios/android/app-mobile/build/intermediates/apk/dev/debug/app-mobile-dev-debug.apk",
-      "appium:avd": "Medium_Phone_API_36.1",
-      "appium:noReset": true
-    },
-  };
+describe("Android App Launch", () => {
+  it("should open the app and find Home or Login", async () => {
+    const activity = await driver.getCurrentActivity();
+    console.log("📱 Current activity:", activity);
 
-  const driver = await remote(opts);
-  console.log("✅ Android app launched successfully!");
-  await driver.deleteSession();
-}
+    let element;
 
-main().catch(console.error);
+    try {
+      console.log("🔍 Looking for 'Home' element...");
+      element = await $('android=new UiSelector().text("Home")');
+      await element.waitForExist({ timeout: 5000 });
+      console.log("✅ 'Home' element found!");
+    } catch {
+      console.warn("⚠️ Could not find 'Home' — trying 'Login' instead...");
+      element = await $('android=new UiSelector().text("Login")');
+      await element.waitForExist({ timeout: 5000 });
+      console.log("✅ 'Login' element found!");
+    }
+
+    await element.click();
+    console.log("👉 Clicked element successfully.");
+
+    expect(await driver.getCurrentActivity()).to.not.be.empty;
+  });
+});
