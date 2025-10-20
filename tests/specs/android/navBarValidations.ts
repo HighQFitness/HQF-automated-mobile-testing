@@ -1,72 +1,76 @@
 import { expect } from "chai";
 import type { ChainablePromiseElement } from "webdriverio";
 
-describe("Android App Launch", () => {
+async function goHomeSafely() {
+  console.log("Returning to Home page...");
 
-   afterEach(async () => {
-    console.log("Returning to Home page...");
+  try {
 
-    try {
-      const backBtn = $('android=new UiSelector().descriptionContains("Back")');
-      if (await backBtn.isExisting()) {
-        console.log("Found Back button, clicking it to exit modal...");
-        await backBtn.click();
-        await driver.pause(2000);
-      }
-
-      const homeNavBar = await $('~Home_nav_bar');
-      await homeNavBar.waitForExist({ timeout: 10000 });
-
-      if (await homeNavBar.isDisplayed()) {
-        await homeNavBar.click();
-        console.log("Returned to Home page.");
-      } else {
-        console.warn("Home_nav_bar not visible yet. Trying fallback navigation...");
-        await driver.back();
-      }
-    } catch (error) {
-      console.warn("Could not navigate back to Home:", error);
+    const backBtn = $('android=new UiSelector().descriptionContains("Back")');
+    if (await backBtn.isExisting()) {
+      console.log("Found Back button, clicking to exit modal...");
+      await backBtn.click();
+      await driver.pause(1500);
     }
+
+    const homeNavBar = $('~Home_nav_bar');
+    if (await homeNavBar.isExisting()) {
+      await homeNavBar.click();
+      console.log("Clicked Home nav bar");
+
+      const homeIndicator = $('android=new UiSelector().text("Start workout")');
+      await homeIndicator.waitForExist({ timeout: 10000 });
+      console.log("Confirmed Home screen is fully loaded");
+    } else {
+      console.warn("Home_nav_bar not found, using driver.back() fallback.");
+      await driver.back();
+    }
+  } catch (error) {
+    console.warn("Could not navigate back to Home:", error);
+  }
+}
+
+describe("Android App Navigation Tests", () => {
+  afterEach(async () => {
+    await goHomeSafely();
   });
 
-    it("should open the app and find Home in nav bar", async () => {
-      await driver.pause(5000);
+  it("should open the app and verify Home page buttons", async () => {
+    await driver.pause(3000);
+    const homeNavBar = $('~Home_nav_bar');
+    await homeNavBar.waitForExist({ timeout: 10000 });
+    await homeNavBar.click();
 
-      const activity = await driver.getCurrentActivity();
-      console.log("Current activity:", activity);
+    const startWorkoutButton = $('android=new UiSelector().text("Start workout")');
+    await startWorkoutButton.waitForExist({ timeout: 10000 });
+    expect(await startWorkoutButton.isDisplayed()).to.be.true;
+  });
 
-      const element: ChainablePromiseElement = $('~Home_nav_bar');
+  it("should open the app and verify Devices page buttons", async () => {
+    await driver.pause(3000);
+    const devicesNavBar = $('~Devices_nav_bar');
+    await devicesNavBar.waitForExist({ timeout: 10000 });
+    await devicesNavBar.click();
+    console.log("Navigated to Devices tab.");
 
-      await element.waitForExist({ timeout: 10000 });
-      console.log("Found Home_nav_bar element!");
-      await element.click();
+    const addPillButton = $('android=new UiSelector().text("Add Pills")');
+    await addPillButton.waitForExist({ timeout: 10000 });
+    expect(await addPillButton.isDisplayed()).to.be.true;
+  });
 
-      expect(await driver.getCurrentActivity()).to.not.be.empty;
-      const startWorkoutButton = $('android=new UiSelector().text("Start workout")');
+  it("should open the app and verify Feedback page buttons", async () => {
+    await driver.pause(3000);
+    const feedbackNavBar = $('~Feedback_nav_bar');
+    await feedbackNavBar.waitForExist({ timeout: 10000 });
+    await feedbackNavBar.click();
+    console.log("Navigated to Feedback tab.");
 
-      await startWorkoutButton.waitForExist({ timeout: 10000 });
-      console.log("Found Start workout button!");
+    const bugReportButton = $('android=new UiSelector().text("Bug Report")');
+    await bugReportButton.waitForExist({ timeout: 10000 });
+    expect(await bugReportButton.isDisplayed()).to.be.true;
 
-      const isDisplayed = await startWorkoutButton.isDisplayed();
-      expect(isDisplayed).to.be.true;  
-    });
-
-    it("should open the app and find Devices in nav bar", async () => {
-      await driver.pause(3000);
-      const activity = await driver.getCurrentActivity();
-      console.log("Current activity:", activity);
-
-          const element: ChainablePromiseElement = $('~Devices_nav_bar');  
-      await element.click();
-
-      expect(await driver.getCurrentActivity()).to.not.be.empty;
-
-      const addPillButton = await $('android=new UiSelector().text("Add Pills")');
-
-      await addPillButton.waitForExist({ timeout: 10000 });
-      console.log("Found Add Pill button");
-
-      const isDisplayed = await addPillButton.isDisplayed();
-      expect(isDisplayed).to.be.true;
-    });
+    const suggestionButton = $('android=new UiSelector().text("Suggestion for improvement")');
+    await suggestionButton.waitForExist({ timeout: 10000 });
+    expect(await suggestionButton.isDisplayed()).to.be.true;
+  });
 });
