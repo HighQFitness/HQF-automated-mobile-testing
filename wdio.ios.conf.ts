@@ -23,7 +23,10 @@ export const config: WebdriverIO.Config = {
     // The path of the spec files will be resolved relative from the directory of
     // of the config file unless it's absolute.
     //
-    specs: ['./tests/specs/**/*.ts'],
+    
+    suites: {
+        ios: ['./tests/specs/iOS/**/*.ts'],
+},
 
     // Patterns to exclude.
     exclude: [
@@ -45,7 +48,7 @@ export const config: WebdriverIO.Config = {
     // and 30 processes will get spawned. The property handles how many capabilities
     // from the same test should run tests.
     //
-    maxInstances: 10,
+    maxInstances: 1,
     //
     // If you have trouble getting all important capabilities together, check out the
     // Sauce Labs platform configurator - a great tool to configure your capabilities:
@@ -53,13 +56,15 @@ export const config: WebdriverIO.Config = {
     //
     capabilities: [
   {
-    platformName: "Android",
-    "appium:automationName": "UiAutomator2",
-    "appium:deviceName": "Medium_Phone_API_36.1",
-    "appium:app":
-      "/Users/jimenanemina/Repos/highQFitness/HQF-android-ios/android/app-mobile/build/intermediates/apk/dev/debug/app-mobile-dev-debug.apk",
-    "appium:noReset": true,
-  },
+      platformName: "iOS",
+      "appium:deviceName": "iPhone 17",
+      "appium:platformVersion": "26.0",
+      "appium:automationName": "XCUITest",
+      "appium:app": "/Users/jimenanemina/Library/Developer/Xcode/DerivedData/HiQFitness-ffzzmvguetpesgdqgwbjrebktwpl/Build/Products/Debug-iphonesimulator/HiQFitness.app",
+      "appium:noReset": true,
+      "appium:newCommandTimeout": 3600,
+      "appium:connectHardwareKeyboard": true,
+    },
 ],
 
     //
