@@ -1,5 +1,4 @@
 import { expect } from "chai";
-import type { ChainablePromiseElement } from "webdriverio";
 
 async function goHomeSafely() {
   console.log("Returning to Home page...");
@@ -10,7 +9,6 @@ async function goHomeSafely() {
     if (await backBtn.isExisting()) {
       console.log("Found Back button, clicking to exit modal...");
       await backBtn.click();
-      await driver.pause(1500);
     }
 
     const homeNavBar = $('~Home_nav_bar');
@@ -36,7 +34,6 @@ describe("Android App Navigation Tests", () => {
   });
 
   it("should open the app and verify Home page buttons", async () => {
-    await driver.pause(3000);
     const homeNavBar = $('~Home_nav_bar');
     await homeNavBar.waitForExist({ timeout: 10000 });
     await homeNavBar.click();
@@ -47,7 +44,6 @@ describe("Android App Navigation Tests", () => {
   });
 
   it("should open the app and verify Devices page buttons", async () => {
-    await driver.pause(3000);
     const devicesNavBar = $('~Devices_nav_bar');
     await devicesNavBar.waitForExist({ timeout: 10000 });
     await devicesNavBar.click();
@@ -59,7 +55,6 @@ describe("Android App Navigation Tests", () => {
   });
 
   it("should open the app and verify Feedback page buttons", async () => {
-    await driver.pause(3000);
     const feedbackNavBar = $('~Feedback_nav_bar');
     await feedbackNavBar.waitForExist({ timeout: 10000 });
     await feedbackNavBar.click();
