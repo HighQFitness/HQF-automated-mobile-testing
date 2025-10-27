@@ -18,6 +18,7 @@
   },
   "include": [
     "tests/**/*.ts",
-    "wdio.conf.ts"
+    "wdio.ios.conf.ts",
+    "wdio.android.conf.ts"
   ]
 }
