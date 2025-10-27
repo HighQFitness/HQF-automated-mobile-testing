@@ -1,8 +1,4 @@
 name: Install dependencies (robust)
-run: |
-    echo "Attempting clean CI install..."
-    npm ci || (echo "Lockfile mismatch detected — running npm install fallback" && rm -rf node_modules && npm install)
-
 
 on:
   pull_request:
@@ -25,8 +21,10 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install dependencies (robust)
+        run: |
+          echo "Attempting clean CI install..."
+          npm ci || (echo "Lockfile mismatch detected — running npm install fallback" && rm -rf node_modules && npm install)
 
       # --- ANDROID SETUP ---
       - name: Set up Android environment
