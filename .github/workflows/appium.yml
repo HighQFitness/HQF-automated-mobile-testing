@@ -1,4 +1,8 @@
-name: HQF Mobile App Tests (Local)
+name: Install dependencies (robust)
+run: |
+    echo "Attempting clean CI install..."
+    npm ci || (echo "Lockfile mismatch detected — running npm install fallback" && rm -rf node_modules && npm install)
+
 
 on:
   pull_request:
