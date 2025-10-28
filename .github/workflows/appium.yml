@@ -1,4 +1,4 @@
-name: Install dependencies (robust)
+name: Mobile E2E (Appium) CI
 
 on:
   pull_request:
@@ -9,10 +9,14 @@ jobs:
     runs-on: macos-latest
 
     strategy:
+      fail-fast: false
       matrix:
         platform: [android, ios]
 
     steps:
+      # ---------------------------
+      # CHECKOUT + SETUP
+      # ---------------------------
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -26,7 +30,9 @@ jobs:
           echo "Attempting clean CI install..."
           npm ci || (echo "Lockfile mismatch detected — running npm install fallback" && rm -rf node_modules && npm install)
 
-      # --- ANDROID SETUP ---
+      # ---------------------------
+      # ANDROID SETUP
+      # ---------------------------
       - name: Set up Android environment
         if: matrix.platform == 'android'
         run: |
@@ -36,34 +42,60 @@ jobs:
           nohup $ANDROID_HOME/emulator/emulator -avd testEmulator -no-audio -no-snapshot -no-window &
           adb wait-for-device
           adb shell input keyevent 82
+          echo "✅ Android emulator is ready"
 
-      # --- IOS SETUP ---
+      # ---------------------------
+      # IOS SETUP
+      # ---------------------------
       - name: Boot iOS simulator
         if: matrix.platform == 'ios'
         run: |
+          echo "Booting iOS simulator"
           xcrun simctl list devices
           SIMULATOR=$(xcrun simctl create "iPhone-14-Test" "com.apple.CoreSimulator.SimDeviceType.iPhone-14" "com.apple.CoreSimulator.SimRuntime.iOS-17-0")
-          xcrun simctl boot $SIMULATOR
-          xcrun simctl bootstatus $SIMULATOR
+          xcrun simctl boot "$SIMULATOR"
+          echo "Waiting for simulator to boot..."
+          xcrun simctl bootstatus "$SIMULATOR" -b
+          echo "✅ iOS simulator booted successfully"
 
-      # --- START APPIUM SERVER ---
+      # ---------------------------
+      # START APPIUM SERVER
+      # ---------------------------
       - name: Start Appium server
         run: |
-          npx appium --log-level info &
-          sleep 10
+          echo "Starting Appium..."
+          npx appium --log-level info > appium.log 2>&1 &
+          echo "Waiting for Appium server to become available..."
+          npx wait-on http://localhost:4723/wd/hub/status --timeout 90000
+          echo "✅ Appium server is ready"
 
-      # --- RUN TESTS ---
+      # ---------------------------
+      # RUN TESTS
+      # ---------------------------
       - name: Run Appium tests (${{ matrix.platform }})
         env:
           PLATFORM: ${{ matrix.platform }}
         run: |
-          echo "Running Appium tests on $PLATFORM"
+          echo "Running Appium tests on $PLATFORM..."
           npx wdio wdio.${{ matrix.platform }}.conf.js --spec ./tests/${{ matrix.platform }}
+          echo "✅ Tests completed for $PLATFORM"
 
-      # --- UPLOAD RESULTS ---
+      # ---------------------------
+      # UPLOAD RESULTS
+      # ---------------------------
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: appium-${{ matrix.platform }}-report
           path: reports/${{ matrix.platform }}/
+
+      # ---------------------------
+      # DEBUG LOGS (always upload)
+      # ---------------------------
+      - name: Upload Appium logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: appium-${{ matrix.platform }}-logs
+          path: appium.log
