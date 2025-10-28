@@ -8,7 +8,14 @@
     "wdio": "npx wdio run ./wdio.conf.ts",
     "preinstall": "npx npm-force-resolutions"
   },
-  "keywords": ["appium", "webdriverio", "mobile", "android", "ios", "automation"],
+  "keywords": [
+    "appium",
+    "webdriverio",
+    "mobile",
+    "android",
+    "ios",
+    "automation"
+  ],
   "author": "Jimena Nemiña",
   "license": "ISC",
   "dependencies": {
@@ -29,7 +36,8 @@
     "appium-xcuitest-driver": "^10.2.2",
     "chai": "^5.1.0",
     "npm-force-resolutions": "^0.0.10",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wait-on": "^9.0.1"
   },
   "resolutions": {
     "axios": "1.6.1"
