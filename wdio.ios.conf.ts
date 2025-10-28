@@ -139,13 +139,13 @@ export const config: WebdriverIO.Config = {
     // see also: https://webdriver.io/docs/dot-reporter
     reporters: [
   'spec',
-  ['junit', {
+  ['allure', {
     outputDir: `./reports/${process.env.PLATFORM || 'iOS'}`,
-    outputFileFormat: function (opts) {
-      return `results-${opts.cid}.xml`;
-    },
+    disableWebdriverStepsReporting: false,
+    disableWebdriverScreenshotsReporting: false,
   }],
 ],
+
 
 
     // Options to be passed to Mocha.
