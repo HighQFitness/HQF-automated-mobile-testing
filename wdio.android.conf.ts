@@ -61,8 +61,7 @@ export const config: WebdriverIO.Config = {
       platformName: "Android",
       "appium:automationName": "UiAutomator2",
       "appium:deviceName": "Medium_Phone_API_36.1",
-      "appium:app":
-        "/Users/jimenanemina/Repos/highQFitness/HQF-android-ios/android/app-mobile/build/intermediates/apk/dev/debug/app-mobile-dev-debug.apk",
+      "appium:app": "./android/app-mobile/build/intermediates/apk/dev/debug/app-mobile-dev-debug.apk",
       "appium:noReset": true,
     },
   ],

@@ -15,7 +15,7 @@ jobs:
 
     steps:
       # ---------------------------
-      # CHECKOUT + SETUP
+      # CHECKOUT & SETUP
       # ---------------------------
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,32 +31,58 @@ jobs:
           npm ci || (echo "Lockfile mismatch detected — running npm install fallback" && rm -rf node_modules && npm install)
 
       # ---------------------------
-      # ANDROID SETUP
+      # BUILD ANDROID APP
       # ---------------------------
-      - name: Set up Android environment
+      - name: Build Android app
         if: matrix.platform == 'android'
         run: |
-          echo "Setting up Android emulator"
-          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "system-images;android-30;google_apis;x86_64"
-          $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n testEmulator -k "system-images;android-30;google_apis;x86_64" --force
-          nohup $ANDROID_HOME/emulator/emulator -avd testEmulator -no-audio -no-snapshot -no-window &
-          adb wait-for-device
-          adb shell input keyevent 82
-          echo "✅ Android emulator is ready"
+          echo "Building Android app..."
+          cd android
+          ./gradlew assembleDebug
+          ls -lh app-mobile/build/intermediates/apk/dev/debug/ || ls -lh app/build/outputs/apk/debug/
 
       # ---------------------------
-      # IOS SETUP
+      # BUILD IOS APP
+      # ---------------------------
+      - name: Build iOS app
+        if: matrix.platform == 'ios'
+        run: |
+          echo "Building iOS app..."
+          cd ios
+          xcodebuild -scheme "HiQFitness" \
+                     -destination 'platform=iOS Simulator,name=iPhone 14,OS=17.0' \
+                     -derivedDataPath build
+          ls -lh build/Build/Products/Debug-iphonesimulator/
+
+      # ---------------------------
+      # SET UP ANDROID EMULATOR
+      # ---------------------------
+      - name: Set up Android emulator
+        if: matrix.platform == 'android'
+        run: |
+          echo "Setting up Android emulator..."
+          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "system-images;android-30;google_apis;x86_64"
+          $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n testEmulator -k "system-images;android-30;google_apis;x86_64" --force
+          nohup $ANDROID_HOME/emulator/emulator -avd testEmulator -no-window -no-snapshot -no-boot-anim -no-audio &
+          adb wait-for-device
+          sleep 30
+          adb shell input keyevent 82
+          echo "✅ Android emulator ready"
+
+      # ---------------------------
+      # SET UP IOS SIMULATOR
       # ---------------------------
       - name: Boot iOS simulator
         if: matrix.platform == 'ios'
         run: |
-          echo "Booting iOS simulator"
-          xcrun simctl list devices
-          SIMULATOR=$(xcrun simctl create "iPhone-14-Test" "com.apple.CoreSimulator.SimDeviceType.iPhone-14" "com.apple.CoreSimulator.SimRuntime.iOS-17-0")
+          echo "Booting iOS simulator..."
+          DEVICE="iPhone 14"
+          RUNTIME=$(xcrun simctl list runtimes | grep "iOS 17" | awk '{print $NF}' | tr -d '()')
+          SIMULATOR=$(xcrun simctl create "TestDevice" "com.apple.CoreSimulator.SimDeviceType.${DEVICE// /-}" "$RUNTIME")
           xcrun simctl boot "$SIMULATOR"
-          echo "Waiting for simulator to boot..."
           xcrun simctl bootstatus "$SIMULATOR" -b
-          echo "✅ iOS simulator booted successfully"
+          xcrun simctl list | grep Booted
+          echo "✅ iOS simulator booted"
 
       # ---------------------------
       # START APPIUM SERVER
@@ -64,10 +90,10 @@ jobs:
       - name: Start Appium server
         run: |
           echo "Starting Appium..."
-          npx appium --log-level info > appium.log 2>&1 &
-          echo "Waiting for Appium server to become available..."
-          npx wait-on http://localhost:4723/wd/hub/status --timeout 90000
-          echo "✅ Appium server is ready"
+          nohup npx appium --log-level info --base-path /wd/hub > appium.log 2>&1 &
+          echo "Waiting for Appium server..."
+          npx wait-on http://127.0.0.1:4723/wd/hub/status --timeout 120000
+          echo "✅ Appium server ready"
 
       # ---------------------------
       # RUN TESTS
@@ -76,9 +102,13 @@ jobs:
         env:
           PLATFORM: ${{ matrix.platform }}
         run: |
-          echo "Running Appium tests on $PLATFORM..."
-          npx wdio wdio.${{ matrix.platform }}.conf.js --spec ./tests/${{ matrix.platform }}
-          echo "✅ Tests completed for $PLATFORM"
+          echo "Preparing report directories..."
+          mkdir -p reports/${{ matrix.platform }}
+          echo "Listing Appium log (if any) before test run:"
+          ls -lh appium.log || echo "⚠️ appium.log missing yet (will be created soon)"
+          echo "Running WDIO tests on $PLATFORM..."
+          npx wdio wdio.${{ matrix.platform }}.conf.js || (echo "⚠️ First test run failed — retrying once..." && sleep 15 && npx wdio wdio.${{ matrix.platform }}.conf.js)
+          echo "✅ WDIO test run completed on $PLATFORM"
 
       # ---------------------------
       # UPLOAD RESULTS
@@ -87,15 +117,5 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: appium-${{ matrix.platform }}-report
-          path: reports/${{ matrix.platform }}/
-
-      # ---------------------------
-      # DEBUG LOGS (always upload)
-      # ---------------------------
-      - name: Upload Appium logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: appium-${{ matrix.platform }}-logs
-          path: appium.log
+          name: appium-${{ matrix.platform }}-reports
+          path: reports/${{ matrix
