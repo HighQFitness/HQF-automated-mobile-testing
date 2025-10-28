@@ -118,4 +118,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: appium-${{ matrix.platform }}-reports
-          path: reports/${{ matrix
+          path: reports/${{ matrix.platform }}/
+          if-no-files-found: warn
+
+      - name: Upload Appium logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: appium-${{ matrix.platform }}-logs
+          path: appium.log
+          if-no-files-found: warn
