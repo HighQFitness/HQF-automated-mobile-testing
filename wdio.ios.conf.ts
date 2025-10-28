@@ -60,7 +60,7 @@ export const config: WebdriverIO.Config = {
       "appium:deviceName": "iPhone 17",
       "appium:platformVersion": "26.0",
       "appium:automationName": "XCUITest",
-      "appium:app": "/Users/jimenanemina/Library/Developer/Xcode/DerivedData/HiQFitness-ffzzmvguetpesgdqgwbjrebktwpl/Build/Products/Debug-iphonesimulator/HiQFitness.app",
+      "appium:app": "./ios/build/Build/Products/Debug-iphonesimulator/HiQFitness.app",
       "appium:noReset": true,
       "appium:newCommandTimeout": 3600,
       "appium:connectHardwareKeyboard": true,
@@ -137,7 +137,16 @@ export const config: WebdriverIO.Config = {
     // Test reporter for stdout.
     // The only one supported by default is 'dot'
     // see also: https://webdriver.io/docs/dot-reporter
-    reporters: ['spec'],
+    reporters: [
+  'spec',
+  ['allure', {
+    outputDir: `./reports/${process.env.PLATFORM || 'iOS'}`,
+    disableWebdriverStepsReporting: false,
+    disableWebdriverScreenshotsReporting: false,
+  }],
+],
+
+
 
     // Options to be passed to Mocha.
     // See the full list at http://mochajs.org/

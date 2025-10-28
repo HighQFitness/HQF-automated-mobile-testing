@@ -61,8 +61,7 @@ export const config: WebdriverIO.Config = {
       platformName: "Android",
       "appium:automationName": "UiAutomator2",
       "appium:deviceName": "Medium_Phone_API_36.1",
-      "appium:app":
-        "/Users/jimenanemina/Repos/highQFitness/HQF-android-ios/android/app-mobile/build/intermediates/apk/dev/debug/app-mobile-dev-debug.apk",
+      "appium:app": "./android/app-mobile/build/intermediates/apk/dev/debug/app-mobile-dev-debug.apk",
       "appium:noReset": true,
     },
   ],
@@ -137,7 +136,16 @@ export const config: WebdriverIO.Config = {
   // Test reporter for stdout.
   // The only one supported by default is 'dot'
   // see also: https://webdriver.io/docs/dot-reporter
-  reporters: ["spec"],
+  reporters: [
+  'spec',
+  ['allure', {
+    outputDir: `./reports/${process.env.PLATFORM || 'android'}`,
+    disableWebdriverStepsReporting: false,
+    disableWebdriverScreenshotsReporting: false,
+  }],
+],
+
+
 
   // Options to be passed to Mocha.
   // See the full list at http://mochajs.org/
