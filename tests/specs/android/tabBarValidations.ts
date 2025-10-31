@@ -21,7 +21,7 @@ async function goHomeSafely() {
       console.log("Confirmed Home screen is fully loaded");
     } else {
       console.warn("Home_nav_bar not found, using driver.back() fallback.");
-      await driver.back();
+      await browser.back();
     }
   } catch (error) {
     console.warn("Could not navigate back to Home:", error);

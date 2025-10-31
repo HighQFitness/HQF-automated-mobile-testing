@@ -54,18 +54,20 @@ export const config: WebdriverIO.Config = {
     // Sauce Labs platform configurator - a great tool to configure your capabilities:
     // https://saucelabs.com/platform/platform-configurator
     //
-    capabilities: [
-  {
-      platformName: "iOS",
-      "appium:deviceName": "iPhone 17",
-      "appium:platformVersion": "26.0",
-      "appium:automationName": "XCUITest",
-      "appium:app": "./ios/build/Build/Products/Debug-iphonesimulator/HiQFitness.app",
-      "appium:noReset": true,
-      "appium:newCommandTimeout": 3600,
-      "appium:connectHardwareKeyboard": true,
-    },
-],
+    capabilities: [{
+  platformName: "iOS",
+  "appium:deviceName": "iPhone 17",
+  "appium:platformVersion": "26.0",
+  "appium:automationName": "XCUITest",
+  "appium:app": "/Users/jimenanemina/Library/Developer/Xcode/DerivedData/HiQFitness-ffzzmvguetpesgdqgwbjrebktwpl/Build/Products/Debug-iphonesimulator/HiQFitness.app",
+  "appium:noReset": false,
+  "appium:fullReset": false,
+  "appium:newCommandTimeout": 3600,
+  "appium:connectHardwareKeyboard": true,
+  "appium:wdaLaunchTimeout": 180000,
+  "appium:wdaConnectionTimeout": 180000
+}],
+
 
     //
     // ===================
